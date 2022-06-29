@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='anbani',
-    version='0.9.0',
+    version='0.9.1',
     author="George Gach",
     author_email="georgegach@outlook.com",
     description="Georgian alphabet and language utilities for Natural Language Processing, script conversion  and more.",
@@ -14,8 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/anbani/anbani.py",
     include_package_data=True,
-    packages=find_packages('anbani'),
-    package_dir={'': 'anbani'},
+    packages=find_packages(),
     install_requires=[
         "pymupdf",
         "hjson",
