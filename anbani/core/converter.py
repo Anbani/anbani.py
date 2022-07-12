@@ -1,10 +1,14 @@
 import hjson
 import re
+import os
+
+dirname = os.path.dirname(__file__)
+datafilepath = os.path.realpath(os.path.join(dirname, "../data/letters.js"))
 
 # Exact copy of the Javascript object from Anbani.JS for easier parallel development down the road
 # .js because .json doesn't allow comments that would be parsable with hjson (human json)
 data = hjson.loads(
-    open("../anbani/data/letters.js").read().replace('export default ', '')
+    open(datafilepath).read().replace('export default ', '')
 )
 
 script_regex = {

@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='anbani',
-    version='0.9.1',
+    version='0.9.2',
     author="George Gach",
     author_email="georgegach@outlook.com",
     description="Georgian alphabet and language utilities for Natural Language Processing, script conversion  and more.",
