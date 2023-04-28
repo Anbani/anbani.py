@@ -1,8 +1,12 @@
 import pandas as pd
 import re
+import os
+from pathlib import Path
+module_path = Path(__file__).parent.parent.absolute()
 
-AMBIGRAM_BALANCED_PATH = "data/ambigram_nc5_len7.csv"
-AMBIGRAM_ACCURATE_PATH = "data/ambigram_nc1_len10.csv"
+
+AMBIGRAM_BALANCED_PATH = os.path.join(module_path, "data/ambigram_nc5_len7.csv")
+AMBIGRAM_ACCURATE_PATH = os.path.join(module_path, "data/ambigram_nc1_len10.csv")
 
 extract_mapping = lambda df: df[~df.REDUNDANT][["MASKED", "NGRAM"]].values
 
