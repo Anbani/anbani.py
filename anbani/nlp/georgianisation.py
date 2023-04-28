@@ -94,6 +94,23 @@ letter_mapping = [
 ]
 
 
+def _decapitalise(text):
+    sentences = re.split(r'([.!?]\s*)', text)
+    
+    def lowercase_first_word(sentence):
+        words = sentence.split(" ", 1)
+        words[0] = words[0].lower()
+        return " ".join(words)
+    
+    processed_sentences = [lowercase_first_word(sentence) for sentence in sentences[::2]]
+    result = ''.join([
+        processed_sentences[i] + (sentences[i * 2 + 1] if i * 2 + 1 < len(sentences) else '')
+        for i in range(len(processed_sentences))
+    ])
+
+    return result
+
+
 def _transliterate_diphthongs(sentence):
     for dfrom, dto in diphthong_mapping:
         sentence = sentence.replace(dfrom, dto)
@@ -145,6 +162,7 @@ def georgianise_balanced(sentence):
     Smarter than fastest, faster than Smartest. Uses 10K tokens.
     """
     
+    sentence = _decapitalise(sentence)
     sentence = _chevron_wrap(sentence)
     sentence = _transliterate_diphthongs(sentence)
     sentence = _transliterate_letters(sentence, even_ambiguous=False)
@@ -158,7 +176,8 @@ def georgianise_accurate(sentence):
     """
     Most accurate implementation of Georgianisation without applying comprehensive million row wordlist in brute force. Uses 50K tokens.
     """
-    
+
+    sentence = _decapitalise(sentence)
     sentence = _chevron_wrap(sentence)
     sentence = _transliterate_diphthongs(sentence)
     sentence = _transliterate_letters(sentence, even_ambiguous=False)
