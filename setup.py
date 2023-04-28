@@ -5,10 +5,10 @@ with open("README.md", "r") as f:
 
 setup(
     name='anbani',
-    version='0.9.2',
+    version='0.9.3',
     author="George Gach",
     author_email="georgegach@outlook.com",
-    description="Georgian alphabet and language utilities for Natural Language Processing, script conversion  and more.",
+    description="Georgian alphabet and language utilities for Natural Language Processing, script conversion and more.",
     license='GPL',
     long_description=long_description,
     long_description_content_type="text/markdown",
