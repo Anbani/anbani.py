@@ -20,6 +20,17 @@ interpret("გამარჯობა", "asomtavruli")
 # 'ႢႠႫႠႰႿႭႡႠ'
 ```
 
+Georgianisation example:
+
+```python
+from anbani.nlp.georgianisation import georgianise
+
+georgianise("gamarjoba - rogor xar - rasa iqm - kaia kata - kai erti")
+
+# 'გამარჯობა - როგორ ხარ - რასა იქმ - კაია კატა - კაი ერთი'
+```
+
+
 Convert ebooks with qwerty encoding to unicode Mkhedruli:
 
 ```python
