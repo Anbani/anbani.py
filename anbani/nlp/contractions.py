@@ -24,3 +24,10 @@ def expand_text(text):
         if contraction in text:
             text = text.replace(contraction, cmap[contraction])
     return text
+
+
+def contract_text(text):
+    emap = {expansion: contraction for contraction, expansion in cmap.items()}
+    for expansion, contraction in emap.items():
+        text = text.replace(expansion, contraction)
+    return text
