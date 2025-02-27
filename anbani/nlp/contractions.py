@@ -11,10 +11,6 @@ with open(
 ) as _f:
     cmap = {row["CONTRACTION"]: row["EXPANSION"] for row in csv.DictReader(_f)}
 
-# Replace longest contractions first so that e.g. "ა.ს.ს.რ." is handled before
-# the shorter "ა." that it contains.
-_contractions_by_length = sorted(cmap.items(), key=lambda kv: len(kv[0]), reverse=True)
-
 
 def expand(word):
     # Just a wrapper around the contractions map
@@ -22,8 +18,9 @@ def expand(word):
 
 
 def expand_text(text):
-    # Replace every known contraction with its expansion.
-    for contraction, expansion in _contractions_by_length:
-        text = text.replace(contraction, expansion)
-
+    # Sort contractions by length (longest first) to avoid partial matches
+    sorted_contractions = sorted(cmap.keys(), key=len, reverse=True)
+    for contraction in sorted_contractions:
+        if contraction in text:
+            text = text.replace(contraction, cmap[contraction])
     return text
