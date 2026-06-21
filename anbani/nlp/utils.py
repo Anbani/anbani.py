@@ -1,40 +1,68 @@
-import pandas as pd
-from tqdm import tqdm
-import re
-from collections import defaultdict
-import fitz
+"""PDF / e-book text extraction.
+
+PyMuPDF is imported lazily inside :func:`ebook2text` so that importing this
+module (and the rest of ``anbani.nlp``) does not require the optional
+``pymupdf`` dependency.
+"""
+
+# Hyphen-like code points that, when followed by a newline, indicate a word
+# split across lines and should be stitched back together.
+_HYPHENS = (
+    "-",   # 002D
+    "‐",   # 2010
+    "‑",   # 2011
+    "‒",   # 2012
+    "–",   # 2013
+    "—",   # 2014
+    "―",   # 2015
+    "−",   # 2212
+    "֊",   # 058A
+    "⁻",   # 207B
+    "₋",   # 208B
+    "⸺",  # 2E3A
+    "⸻",  # 2E3B
+    "﹘",  # FE58
+    "－",  # FF0D
+    "﹣",  # FE63
+)
+
+
+def _import_pymupdf():
+    try:
+        import pymupdf  # PyMuPDF >= 1.24
+        return pymupdf
+    except ImportError:
+        try:
+            import fitz  # older PyMuPDF exposes the module as `fitz`
+            return fitz
+        except ImportError as e:
+            raise ImportError(
+                "ebook2text requires the optional 'pymupdf' dependency. "
+                "Install it with: pip install pymupdf"
+            ) from e
+
 
 def ebook2text(path):
-    try:
-        doc = fitz.open(path)
-        n_pages = doc.page_count
-        
-        text = ""
-        
-        for p in range(n_pages):
-            text += doc.load_page(p).get_text()
-        
-        # Replace hyphen-newline to connect words
-        text = text.replace('-\n', '') # 002D
-        text = text.replace('‐\n', '') # 2010
-        text = text.replace('‑\n', '') # 2011
-        text = text.replace('‒\n', '') # 2012
-        text = text.replace('–\n', '') # 2013
-        text = text.replace('—\n', '') # 2014
-        text = text.replace('―\n', '') # 2015
-        text = text.replace('−\n', '') # 2212
-        text = text.replace('֊\n', '') # 058A
-        text = text.replace('⁻\n', '') # 207B
-        text = text.replace('₋\n', '') # 208B
-        text = text.replace('⸺\n', '') # 2E3A	
-        text = text.replace('⸻\n', '') # 2E3B	
-        text = text.replace('﹘\n', '') # FES8
-        text = text.replace('－\n', '') # FF0D	
-        text = text.replace('﹣\n', '') # FE63
+    """Extract and lightly clean text from the PDF / e-book at ``path``.
 
-        # Replace paragraph and random new lines
-        text = text.replace('\n', ' ')
+    Returns the extracted text, or a ``"Error: ..."`` string if extraction
+    fails. Raises :class:`ImportError` if PyMuPDF is not installed.
+    """
+    pymupdf = _import_pymupdf()
+
+    try:
+        doc = pymupdf.open(path)
+        text = "".join(
+            doc.load_page(p).get_text() for p in range(doc.page_count)
+        )
+
+        # Reconnect words split by a hyphen at a line break
+        for hyphen in _HYPHENS:
+            text = text.replace(hyphen + "\n", "")
+
+        # Flatten the remaining (paragraph / random) newlines
+        text = text.replace("\n", " ")
     except Exception as e:
-        return 'Error: ' + str(e)
+        return "Error: " + str(e)
 
     return text

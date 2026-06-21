@@ -18,14 +18,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install (converter deps only)
-        # The converter needs only hjson. The nlp subpackage's heavy optional
-        # deps (pymupdf, pandas, numpy, tqdm) are deliberately skipped to keep
-        # this signal fast and focused on anbani.core.
+      - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e . --no-deps
-          pip install hjson pytest
+          pip install -e ".[pdf,dev]"
 
-      - name: Run tests
-        run: pytest -q
+      - name: Run tests with coverage
+        run: pytest --cov --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
