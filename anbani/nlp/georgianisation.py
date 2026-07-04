@@ -212,9 +212,13 @@ def georgianise_custom(sentence, ambigrams_custom):
     
     
 
-def georgianise(sentence, mode="accurate"):
+def georgianise(sentence, mode="balanced"):
     """
     Redeem others' qwerty sins.
+
+    Default mode is ``"balanced"`` to match anbani.js (whose ``"accurate"``
+    ngram table is too large to ship in the npm package). ``"accurate"`` remains
+    available here as a Python-only extra.
     """
 
     if mode == "accurate":
