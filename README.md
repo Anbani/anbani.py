@@ -90,6 +90,45 @@ print(contract_text("მასის ატომური ერთეული
 # მ.ა.ე. და ა.შ.
 ```
 
+## Text statistics & lorem
+
+```python
+from anbani import toolkit, lorem
+
+toolkit.frequency("ანბანი")   # per-letter frequencies
+toolkit.friedman(text)         # index of coincidence
+lorem.sentences(12)            # fake Georgian prose
+lorem.names(3)                 # fake full names
+```
+
+## Command line
+
+Installing the package also installs an `anbani` command:
+
+```bash
+anbani interpret "gamarjoba"                      # -> ᲒᲐᲛᲐᲠᲯᲝᲑᲐ
+anbani convert "ანბანი" -f mkhedruli -t asomtavruli
+anbani georgianise "gamarjoba"
+anbani expand "ვნახოთ ა. შ."
+anbani lorem -w 8
+```
+
+## Parity with anbani.js
+
+anbani.py and [anbani.js](https://github.com/Anbani/anbani.js) share one
+behavior contract, proved in CI by the byte-identical `spec/golden.json` that
+both test suites run. As of 3.0 they are feature-equivalent; the only
+intentional gaps are `ebook2text` (Python-only, needs PyMuPDF) and the
+browser/UMD bundle (js-only).
+
+## 3.0 — breaking changes
+
+- `classify_text` returns `"unknown"` for undetectable / mixed-script text and
+  now reports the four bicameral scripts; `interpret` raises on `"unknown"`.
+- `convert` / `interpret` raise `ValueError` on an unsupported source or target
+  (was an assertion, or a silent passthrough for targets).
+- `georgianise` defaults to `mode="balanced"` (was `"accurate"`).
+
 ## To-Do
 
 Feel free to fork this repo!  
@@ -97,7 +136,7 @@ Feel free to fork this repo!
 - [x] Tokenizer
 - [x] Transliteration 
 - [x] Expand contractions
-- [x] ebook2pdf converter
+- [x] ebook2text converter
 - [ ] Stemmer
 - [ ] Lemmatizer
 - [ ] Stopwords
