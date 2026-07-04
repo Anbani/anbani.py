@@ -20,6 +20,7 @@ def test_import_is_lightweight():
         "assert 'numpy' not in sys.modules, 'numpy leaked'; "
         "assert 'pymupdf' not in sys.modules and 'fitz' not in sys.modules, 'pymupdf leaked'; "
         "assert 'anbani.nlp' not in sys.modules, 'nlp leaked'; "
+        "assert 'anbani.tui' not in sys.modules, 'tui leaked'; "
         "assert 'anbani.toolkit' not in sys.modules, 'toolkit eagerly loaded'; "
         "assert 'anbani.lorem' not in sys.modules, 'lorem eagerly loaded'"
     )

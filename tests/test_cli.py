@@ -38,3 +38,10 @@ def test_bad_target_exits_nonzero(capsys):
 def test_missing_subcommand_errors():
     with pytest.raises(SystemExit):
         main([])
+
+
+def test_tui_requires_a_terminal(capsys):
+    # Under pytest, stdin/stdout are not TTYs, so `tui` must refuse cleanly
+    # (exit code 2) rather than trying to take over the terminal.
+    assert main(["tui"]) == 2
+    assert "interactive terminal" in capsys.readouterr().err

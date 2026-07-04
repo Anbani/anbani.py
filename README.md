@@ -113,6 +113,37 @@ anbani expand "ვნახოთ ა. შ."
 anbani lorem -w 8
 ```
 
+## Interactive TUI
+
+New in 3.1: a full-screen terminal UI. Launch it with `anbani tui` (or
+`python -m anbani tui`). Zero extra dependencies — it is hand-rolled ANSI, and
+imports stay lazy so `import anbani` and the plain CLI are unaffected.
+
+```bash
+anbani tui
+```
+
+Five tabs, switch with `1`–`5` or `tab` / `shift+tab`:
+
+| Tab | What it does |
+|-----|--------------|
+| **Converter** | live transliteration; `m` toggles auto/manual, `f`/`o` pick source/target, `s` swaps |
+| **Alphabet** | letter grid + detail card; `hjkl` to move, `c` cycles script, `a` toggles archaic, `enter` copies |
+| **Lorem** | fake Georgian text; `k` kind, `+`/`-` amount, `g` generate |
+| **NLP** | georgianise / latinise / expand / contract; `m` mode, `b` georgianise level (fast/balanced/accurate) |
+| **Toolkit** | letter-frequency bars + Friedman index of coincidence |
+
+Global keys: `?` help overlay · `i`/`enter` edit · `y` copy (via OSC 52) ·
+`q` or `ctrl+c` quit. Minimum terminal size is 60×16.
+
+Notes:
+- No Georgian keyboard? Pick `from: qwerty` in the Converter (type Latin, get
+  Georgian), or paste — bracketed paste is supported in edit mode.
+- Copy uses OSC 52; some terminals block it, in which case the copy silently does
+  nothing.
+- Not supported on native Windows (needs a POSIX terminal); use WSL or the npm
+  package there.
+
 ## Parity with anbani.js
 
 anbani.py and [anbani.js](https://github.com/Anbani/anbani.js) share one
