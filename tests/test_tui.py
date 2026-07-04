@@ -87,11 +87,22 @@ def test_converter_error_survives():
 
 
 def test_converter_bad_swap_toasts():
-    s = feed(app.initial_state(), [CH("m")])
+    # manual mode, then cycle `to` to a non-source target (homoglyph)
+    s = feed(app.initial_state(), [CH("m"), CH("o"), CH("o"), CH("o")])
+    assert s["screens"]["converter"]["to"] == "homoglyph"
     before = (s["screens"]["converter"]["from"], s["screens"]["converter"]["to"])
     s = feed(s, [CH("s")])
     assert s["toast"] and "cannot swap" in s["toast"]["text"]
     assert (s["screens"]["converter"]["from"], s["screens"]["converter"]["to"]) == before
+
+
+def test_converter_valid_swap():
+    # to=nuskhuri (a source) via two `o` cycles from mtavruli
+    s = feed(app.initial_state(), [CH("m"), CH("o"), CH("o")])
+    assert s["screens"]["converter"]["to"] == "nuskhuri"
+    s = feed(s, [CH("s")])
+    assert s["screens"]["converter"]["from"] == "nuskhuri"
+    assert s["screens"]["converter"]["to"] == "mkhedruli"
 
 
 def test_alphabet():
