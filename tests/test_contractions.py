@@ -2,6 +2,7 @@ from anbani.nlp.contractions import (
     cmap,
     contract,
     contract_text,
+    emap,
     expand,
     expand_text,
 )
@@ -47,3 +48,34 @@ def test_contract_text_replaces_expansion():
 def test_contract_text_prefers_longest_expansion():
     longest = max(cmap.values(), key=len)
     assert contract_text(longest) == contract(longest)
+
+
+def test_expand_text_respects_word_boundaries():
+    # "ჰა" (-> "ჰექტარი") is the only dotless contraction key; it must fire as
+    # a standalone token but never inside a word.
+    assert expand_text("ჰაერი") == "ჰაერი"
+    assert expand_text("100 ჰა მიწა") == "100 ჰექტარი მიწა"
+
+
+def test_expand_text_does_not_rescan_replacements():
+    # Single-pass: an inserted expansion must not itself be re-expanded
+    # (e.g. the "ჰა" inside "ბუხჰალტერია").
+    assert expand_text("ბუხჰალტ.") == cmap["ბუხჰალტ."]
+
+
+def test_contract_text_respects_word_boundaries():
+    # "თავი" is an expansion, but it must not fire inside "თავისუფალი".
+    assert contract_text("თავისუფალი ქვეყანა") == "თავისუფალი ქვეყანა"
+
+
+def test_contract_text_matches_contract_for_every_expansion():
+    # Full invariant: contracting a bare expansion always yields exactly its
+    # contraction — catches chained-replacement bugs (e.g. "ათასწლეული" must
+    # become "ათასწ.", not "ათ.წ." via a second pass over the insertion).
+    for expansion, contraction in emap.items():
+        assert contract_text(expansion) == contraction
+
+
+def test_expand_text_matches_expand_for_every_contraction():
+    for contraction, expansion in cmap.items():
+        assert expand_text(contraction) == expansion

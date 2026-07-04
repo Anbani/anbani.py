@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 from pathlib import Path
 
 module_path = Path(__file__).parent.parent.absolute()
@@ -11,18 +12,36 @@ with open(
 ) as _f:
     cmap = {row["CONTRACTION"]: row["EXPANSION"] for row in csv.DictReader(_f)}
 
-# Reverse direction (expansion -> contraction). Several contractions share one
-# expansion (e.g. "ა. შ." and "ა.შ." both expand to "ასე შემდეგ"); keep the
-# shortest contraction, with the string itself as a stable tie-break.
-emap = {}
-for _contraction, _expansion in cmap.items():
-    _incumbent = emap.get(_expansion)
-    if _incumbent is None or (len(_contraction), _contraction) < (len(_incumbent), _incumbent):
-        emap[_expansion] = _contraction
 
-# Some expansions are substrings of a longer expansion, so contract the longer
-# phrase first.
-_expansions_by_length = sorted(emap.items(), key=lambda kv: len(kv[0]), reverse=True)
+def _reverse_map(cmap):
+    # Expansion -> contraction. Several contractions share one expansion
+    # (e.g. "ა. შ." and "ა.შ." both expand to "ასე შემდეგ"); keep the shortest
+    # contraction, with the string itself as a stable tie-break.
+    emap = {}
+    for contraction, expansion in cmap.items():
+        incumbent = emap.get(expansion)
+        if incumbent is None or (len(contraction), contraction) < (len(incumbent), incumbent):
+            emap[expansion] = contraction
+    return emap
+
+
+emap = _reverse_map(cmap)
+
+
+def _replacer(mapping):
+    # Single-pass substitution: keys are matched longest-first (so "ა.ს.ს.რ."
+    # wins over its prefix "ა.") and only at Georgian word boundaries (so keys
+    # never fire inside a word, e.g. "ჰა" in "ჰაერი"). One pass also means an
+    # inserted replacement is never itself re-replaced.
+    keys = sorted(mapping, key=len, reverse=True)
+    pattern = re.compile(
+        "(?<![ა-ჿ])(?:" + "|".join(map(re.escape, keys)) + ")(?![ა-ჿ])"
+    )
+    return lambda text: pattern.sub(lambda m: mapping[m.group(0)], text)
+
+
+_expand_replacer = _replacer(cmap)
+_contract_replacer = _replacer(emap)
 
 
 def expand(word):
@@ -31,12 +50,8 @@ def expand(word):
 
 
 def expand_text(text):
-    # Sort contractions by length (longest first) to avoid partial matches
-    sorted_contractions = sorted(cmap.keys(), key=len, reverse=True)
-    for contraction in sorted_contractions:
-        if contraction in text:
-            text = text.replace(contraction, cmap[contraction])
-    return text
+    # Replace every known contraction with its expansion.
+    return _expand_replacer(text)
 
 
 def contract(phrase):
@@ -45,8 +60,6 @@ def contract(phrase):
 
 
 def contract_text(text):
-    # Inverse of expand_text(): replace known expansions with their contraction,
-    # longest expansion first. Round-tripping expand_text() is not guaranteed.
-    for expansion, contraction in _expansions_by_length:
-        text = text.replace(expansion, contraction)
-    return text
+    # Inverse of expand_text(): every known expansion is abbreviated, so prose
+    # that happens to contain one (e.g. a bare "ახალი") gets contracted too.
+    return _contract_replacer(text)
