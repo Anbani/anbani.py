@@ -61,6 +61,15 @@ def _contract(args):
     print(contract_text(_text(args.text)))
 
 
+def _tui(args):
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        print("error: anbani tui requires an interactive terminal", file=sys.stderr)
+        return 2
+    from anbani.tui.app import run  # lazy: keeps `import anbani.cli` light
+
+    return run()
+
+
 def _lorem(args):
     from anbani import lorem
 
@@ -120,17 +129,20 @@ def build_parser():
     p.add_argument("--seed", type=int)
     p.set_defaults(func=_lorem)
 
+    p = sub.add_parser("tui", help="interactive terminal UI")
+    p.set_defaults(func=_tui)
+
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
-        args.func(args)
+        rc = args.func(args)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
-    return 0
+    return rc if isinstance(rc, int) else 0
 
 
 if __name__ == "__main__":
