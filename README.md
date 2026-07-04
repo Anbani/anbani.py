@@ -80,6 +80,16 @@ print(expand_text(text))
 
 ```
 
+Contract them back:
+
+```python
+from anbani.nlp.contractions import contract_text
+
+print(contract_text("მასის ატომური ერთეული და ასე შემდეგ"))
+
+# მ.ა.ე. და ა.შ.
+```
+
 ## To-Do
 
 Feel free to fork this repo!  
