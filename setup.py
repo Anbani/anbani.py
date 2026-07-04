@@ -15,6 +15,11 @@ setup(
     url="https://github.com/anbani/anbani.py",
     include_package_data=True,
     packages=find_packages(),
+    entry_points={
+        "console_scripts": [
+            "anbani = anbani.cli:main",
+        ],
+    },
     install_requires=[
         "hjson",
     ],
