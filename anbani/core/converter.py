@@ -23,7 +23,7 @@ script_regex = {
 }
 
 # Scripts usable as a conversion *source* (i.e. that index 1:1 into the table).
-VALID_SOURCES = ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri", "qwerty")
+VALID_SOURCES = ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri", "qwerty", "braille")
 
 # Bicameral scripts pair an upper-case and a lower-case unicameral script.
 BICAMERAL_RULES = {
@@ -68,17 +68,40 @@ def interpret(text, dir_to):
     dir_from = classify_text(text)
     if dir_from == "unknown":
         raise ValueError("Could not detect the source script of the given text.")
+    if dir_from in BICAMERAL_RULES:
+        # Mixed-case Georgian text: fold both constituent scripts down to the
+        # lower unicameral script, then convert normally (convert() re-derives
+        # casing when the target is itself bicameral).
+        upper = BICAMERAL_RULES[dir_from]["upper"]
+        lower = BICAMERAL_RULES[dir_from]["lower"]
+        text = "".join(_fold_letter(ch, upper, lower) for ch in text)
+        dir_from = lower
     return convert(text, dir_from, dir_to)
 
 
-# Loose script classifier
+# Vector-based script classifier, mirroring anbani.js classifyText: detects the
+# four unicameral scripts, latin, cyrillic, and — when exactly two Georgian
+# scripts co-occur — the bicameral script they compose. Anything else (mixed
+# Georgian+Latin, empty, digits-only, …) is "unknown".
+_CLASSIFY_ORDER = ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri", "latin", "cyrillic")
+_CLASSIFY_VECTOR = {
+    (True, False, False, False, False, False): "mkhedruli",
+    (False, True, False, False, False, False): "mtavruli",
+    (False, False, True, False, False, False): "asomtavruli",
+    (False, False, False, True, False, False): "nuskhuri",
+    (True, True, False, False, False, False): "tfileliseuli",
+    (True, False, True, False, False, False): "shanidziseuli",
+    (False, False, True, True, False, False): "khutsuri",
+    (False, True, True, False, False, False): "sasataure",
+    (False, False, False, False, True, False): "latin",
+    (False, False, False, False, False, True): "cyrillic",
+}
+
+
 def classify_text(text):
-    for key, pattern in script_regex.items():
-        # `search`, not `match`: the script may not start at position 0
-        # (e.g. leading whitespace, quotes or digits).
-        if re.search(pattern, text):
-            return key
-    return "unknown"
+    # `search`, not `match`: a script may appear anywhere, not at position 0.
+    vector = tuple(bool(re.search(script_regex[key], text)) for key in _CLASSIFY_ORDER)
+    return _CLASSIFY_VECTOR.get(vector, "unknown")
 
 
 # Unicameral conversion
@@ -123,4 +146,13 @@ def letter_converter(letter, dir_from, dir_to):
         return data["alphabets"][dir_to][data["alphabets"][dir_from].index(letter)]
     except ValueError:
         # Letter not present in the source alphabet (punctuation, spaces, …)
+        return letter
+
+
+def _fold_letter(letter, upper, lower):
+    # Map an upper-script letter to its lower-script twin; leave lower-script
+    # letters and non-letters unchanged. Used to normalise bicameral text.
+    try:
+        return data["alphabets"][lower][data["alphabets"][upper].index(letter)]
+    except ValueError:
         return letter

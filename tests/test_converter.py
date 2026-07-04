@@ -80,3 +80,25 @@ def test_punctuation_maps_after_data_sync():
     # The Python data table used to omit the punctuation rows, so '.' fell
     # through unconverted. After syncing with data.mjs it maps to braille.
     assert anbani.convert(".", "mkhedruli", "braille") == "⠲"
+
+
+# --- 3.0: classify vector upgrade, braille source, bicameral interpret ------
+
+def test_classify_detects_bicameral():
+    assert classify_text("Ⴀანბანი") == "shanidziseuli"   # asomtavruli + mkhedruli
+    assert classify_text("Ⴀⴀ") == "khutsuri"              # asomtavruli + nuskhuri
+
+
+def test_classify_mixed_scripts_is_unknown():
+    # Mixed Georgian + Latin no longer resolves to a single script.
+    assert classify_text("ანბანabc") == "unknown"
+    assert classify_text("") == "unknown"
+
+
+def test_braille_as_source():
+    assert anbani.convert("⠁⠃", "braille", "mkhedruli") == "აბ"
+
+
+def test_interpret_bicameral_source():
+    # Mixed-case Georgian is folded to its lower script, then converted.
+    assert anbani.interpret("Ⴀა", "asomtavruli") == "ႠႠ"
