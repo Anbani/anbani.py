@@ -16,14 +16,17 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     install_requires=[
-        "pymupdf",
         "hjson",
-        "numpy",
-        "pandas",
-        "tqdm",
     ],
+    extras_require={
+        "pdf": ["pymupdf"],          # ebook2text / PDF extraction
+        "dev": ["pytest", "pytest-cov"],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],

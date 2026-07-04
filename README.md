@@ -1,11 +1,24 @@
 # AnbaniPy
 
+[![tests](https://github.com/Anbani/anbani.py/actions/workflows/test.yml/badge.svg)](https://github.com/Anbani/anbani.py/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/Anbani/anbani.py/branch/main/graph/badge.svg)](https://codecov.io/gh/Anbani/anbani.py)
+[![PyPI](https://img.shields.io/pypi/v/anbani)](https://pypi.org/project/anbani/)
+[![Python versions](https://img.shields.io/pypi/pyversions/anbani)](https://pypi.org/project/anbani/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 Georgian Python toolkit for NLP, Transliteration and more. Partially based on [anbani.js](https://github.com/anbani/anbani.js).  
 
 ## Install
 
 ```bash
 pip install anbani
+```
+
+Transliteration and NLP utilities need only `hjson`. PDF / e-book extraction
+(`anbani.nlp.utils.ebook2text`) additionally requires PyMuPDF:
+
+```bash
+pip install anbani[pdf]
 ```
 
 ## Quickstart

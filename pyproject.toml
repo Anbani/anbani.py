@@ -1,0 +1,16 @@
+# Tooling configuration only. Packaging still goes through setup.py.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["anbani"]
+omit = ["anbani/data/*"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise ImportError",
+]
