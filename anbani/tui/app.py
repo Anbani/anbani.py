@@ -229,16 +229,11 @@ SPLASH_ART = [
     "⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀",
 ]
 
-def splash_frame(size, style, opts=None):
-    """The wordmark screen. opts={"invert": True} swaps ink/paper for the e-ink
-    "negative" phase; normally white-on-blue with a mustard tagline."""
-    invert = bool(opts and opts.get("invert"))
+def splash_frame(size, style):
+    """The wordmark screen: white ANBANI on a black backdrop, centered."""
     C = size["cols"]
     R = size["rows"]
-    bg_token = "textMajor" if invert else "accent"
-    art_fg = "accent" if invert else "textOnHero"
-    tag_fg = "accent" if invert else "warn"
-    bg = style.bg(bg_token) if style.on else ""
+    bg = style.bg("appBg") if style.on else ""
     rst = style.reset() if style.on else ""
 
     def fill(plain, fg_tok=None):
@@ -252,28 +247,14 @@ def splash_frame(size, style, opts=None):
     for _ in range(top):
         body.append(fill(ui.blank(C)))
     for line in SPLASH_ART:
-        body.append(fill(ui.center(line, C), art_fg))
+        body.append(fill(ui.center(line, C), "textOnHero"))
     body.append(fill(ui.blank(C)))
-    body.append(fill(ui.center("v{} · loading…".format(VERSION), C), tag_fg))
+    body.append(fill(ui.center("v{} · loading…".format(VERSION), C), "textMinor"))
     frame = [body[i] if i < len(body) else fill(ui.blank(C)) for i in range(R)]
     return ui.frame(frame, C, R)
 
 
-def solid_frame(size, style, bg_token):
-    """A flat colour wash -- the "flash" phases of an e-ink refresh."""
-    C = size["cols"]
-    R = size["rows"]
-    line = style.bg(bg_token) + " " * C + style.reset() if style.on else " " * C
-    return ui.frame([line for _ in range(R)], C, R)
-
-
-# e-ink page-refresh: one deliberate blink, ghost a negative, then hold ~2s.
-SPLASH_PHASES = [
-    {"solid": "textMajor", "ms": 140},  # white flash  ┐ one blink
-    {"solid": "appBg", "ms": 140},      # black flash  ┘
-    {"invert": True, "ms": 180},        # ghost negative
-    {"invert": False, "ms": 2000},      # loading screen (hold ~2s)
-]
+SPLASH_SECONDS = 2.0
 
 
 # ---- runtime loop ----------------------------------------------------------
@@ -308,19 +289,19 @@ def run(term=None, caps=None):
         term.write(frame)
 
     def play_splash():
-        def draw_phase(ph):
-            c, r = term.size()
-            if "solid" in ph:
-                lines = solid_frame({"cols": c, "rows": r}, style, ph["solid"])
-            else:
-                lines = splash_frame({"cols": c, "rows": r}, style, {"invert": ph["invert"]})
-            frame = CUR_HIDE + "".join(move_to(i + 1, 1) + lines[i] + EL for i in range(len(lines)))
-            term.write(frame)
+        import time
 
-        for ph in SPLASH_PHASES:
-            draw_phase(ph)
-            if term.read_events(ph["ms"] / 1000.0):  # any input skips the splash
-                return
+        c, r = term.size()
+        lines = splash_frame({"cols": c, "rows": r}, style)
+        frame = CUR_HIDE + "".join(move_to(i + 1, 1) + lines[i] + EL for i in range(len(lines)))
+        term.write(frame)
+        deadline = time.monotonic() + SPLASH_SECONDS
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            if term.read_events(min(0.1, remaining)):  # any input skips the splash
+                break
 
     def load_nlp():
         from anbani.nlp import georgianisation, contractions
