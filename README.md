@@ -123,6 +123,8 @@ imports stay lazy so `import anbani` and the plain CLI are unaffected.
 anbani tui
 ```
 
+![anbani tui — loading splash](docs/tui/splash.png)
+
 Five tabs, switch with `1`–`5` or `tab` / `shift+tab`:
 
 | Tab | What it does |
@@ -132,6 +134,22 @@ Five tabs, switch with `1`–`5` or `tab` / `shift+tab`:
 | **Lorem** | fake Georgian text; `k` kind, `+`/`-` amount, `g` generate |
 | **NLP** | georgianise / latinise / expand / contract; `m` mode, `b` georgianise level (fast/balanced/accurate) |
 | **Toolkit** | letter-frequency bars + Friedman index of coincidence |
+
+**Converter** — live transliteration with script auto-detection:
+
+![Converter tab](docs/tui/converter.png)
+
+**Alphabet** — grid + per-letter detail across every Georgian script, IPA, braille, numeral:
+
+![Alphabet tab](docs/tui/alphabet.png)
+
+**NLP** — georgianise / latinise / expand / contract:
+
+![NLP tab](docs/tui/nlp.png)
+
+**Toolkit** — letter-frequency bars and the Friedman index of coincidence:
+
+![Toolkit tab](docs/tui/toolkit.png)
 
 Global keys: `?` help overlay · `i`/`enter` edit · `y` copy (via OSC 52) ·
 `q` or `ctrl+c` quit. Minimum terminal size is 60×16.
