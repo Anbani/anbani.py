@@ -174,11 +174,18 @@ def test_nlp_lazy_and_accurate_available():
 
 def test_splash():
     for size in [SIZE, {"cols": 100, "rows": 30}, {"cols": 62, "rows": 18}]:
-        lines = app.splash_frame(size, STYLE_OFF)
-        assert len(lines) == size["rows"]
-        for l in lines:
-            assert width(l) == size["cols"]
+        frames = [
+            app.splash_frame(size, STYLE_OFF),
+            app.splash_frame(size, STYLE_OFF, {"invert": True}),
+            app.solid_frame(size, STYLE_OFF, "textMajor"),
+            app.solid_frame(size, STYLE_OFF, "appBg"),
+        ]
+        for lines in frames:
+            assert len(lines) == size["rows"]
+            for l in lines:
+                assert width(l) == size["cols"]
     assert "loading…" in "\n".join(app.splash_frame(SIZE, STYLE_OFF))
+    assert len(app.SPLASH_PHASES) >= 4
 
 
 def test_toolkit():
