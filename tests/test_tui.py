@@ -172,6 +172,15 @@ def test_nlp_lazy_and_accurate_available():
     assert "accurate" in seen
 
 
+def test_splash():
+    for size in [SIZE, {"cols": 100, "rows": 30}, {"cols": 62, "rows": 18}]:
+        lines = app.splash_frame(size, STYLE_OFF)
+        assert len(lines) == size["rows"]
+        for l in lines:
+            assert width(l) == size["cols"]
+    assert "loading…" in "\n".join(app.splash_frame(SIZE, STYLE_OFF))
+
+
 def test_toolkit():
     s = feed(app.initial_state(), [CH("5"), CH("i")] + typ("აააბბგ"))
     st = s["screens"]["toolkit"]["stats"]

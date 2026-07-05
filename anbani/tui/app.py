@@ -218,6 +218,37 @@ def render(state, size, style):
     return ui.frame(all_lines, C, R)
 
 
+# ---- splash ----------------------------------------------------------------
+
+# Braille "ANBANI" wordmark shown while the app starts.
+SPLASH_ART = [
+    "⠀⣿⣿⣿⣿⣤⠀⣿⣿⣿⣿⣿⣿⠀⠀⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿⣤⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀",
+    "⠀⠀⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⠀⣿⣿⠀",
+    "⠀⠀⠀⠀⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀",
+    "⣤⣤⠀⠀⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀⣤⣤⠀⠀⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀",
+    "⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⠀⣿⣿⠀⠀⣿⣿⠀",
+]
+
+SPLASH_SECONDS = 1.0
+
+
+def splash_frame(size, style):
+    C = size["cols"]
+    R = size["rows"]
+    body = []
+    total = len(SPLASH_ART) + 2
+    top = max(0, (R - total) // 2)
+    for _ in range(top):
+        body.append(ui.blank(C))
+    for line in SPLASH_ART:
+        centered = ui.center(line, C)
+        body.append(style.fg("accent") + centered + style.reset() if style.on else centered)
+    body.append(ui.blank(C))
+    tag = ui.center("v{} · loading…".format(VERSION), C)
+    body.append(style.fg("textMinor") + tag + style.reset() if style.on else tag)
+    return ui.frame(body, C, R)
+
+
 # ---- runtime loop ----------------------------------------------------------
 
 def run(term=None, caps=None):
@@ -249,6 +280,21 @@ def run(term=None, caps=None):
         frame = CUR_HIDE + "".join(move_to(i + 1, 1) + lines[i] + EL for i in range(len(lines)))
         term.write(frame)
 
+    def play_splash():
+        import time
+
+        c, r = term.size()
+        lines = splash_frame({"cols": c, "rows": r}, style)
+        frame = CUR_HIDE + "".join(move_to(i + 1, 1) + lines[i] + EL for i in range(len(lines)))
+        term.write(frame)
+        deadline = time.monotonic() + SPLASH_SECONDS
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            if term.read_events(min(0.1, remaining)):  # any input dismisses
+                break
+
     def load_nlp():
         from anbani.nlp import georgianisation, contractions
 
@@ -257,6 +303,7 @@ def run(term=None, caps=None):
 
     term.start()
     try:
+        play_splash()
         paint()
         while True:
             timeout = 0.04 if term.parser_esc_pending else 0.25
