@@ -267,14 +267,12 @@ def solid_frame(size, style, bg_token):
     return ui.frame([line for _ in range(R)], C, R)
 
 
-# e-ink page-refresh: flash paper/ink, ghost a negative, then settle positive.
+# e-ink page-refresh: one deliberate blink, ghost a negative, then hold ~2s.
 SPLASH_PHASES = [
-    {"solid": "textMajor", "ms": 55},   # white flash
-    {"solid": "appBg", "ms": 55},       # black flash
-    {"solid": "textMajor", "ms": 55},   # white flash
-    {"solid": "appBg", "ms": 45},       # black flash
-    {"invert": True, "ms": 120},        # ghost negative
-    {"invert": False, "ms": 520},       # settle positive (hold)
+    {"solid": "textMajor", "ms": 140},  # white flash  ┐ one blink
+    {"solid": "appBg", "ms": 140},      # black flash  ┘
+    {"invert": True, "ms": 180},        # ghost negative
+    {"invert": False, "ms": 2000},      # loading screen (hold ~2s)
 ]
 
 
