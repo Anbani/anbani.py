@@ -16,12 +16,12 @@ jobs:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'parity-pending') }}
     steps:
       - name: Checkout self (anbani.py)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: self
 
       - name: Checkout sibling (anbani.js default branch)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Anbani/anbani.js
           path: sibling
