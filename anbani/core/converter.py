@@ -109,6 +109,19 @@ def convert_unicameral(text, dir_from, dir_to):
     return "".join(letter_converter(letter, dir_from, dir_to) for letter in text)
 
 
+# Sentence starts take the upper script, in one linear pass:
+#   - the text's start and every paragraph start (blank line), past opening quotes, brackets and dialogue dashes;
+#   - a letter after ? . ! ჻, past closing quotes and brackets, whitespace, then opening quotes;
+#   - direct speech after a colon (: „).
+# Never after ; , … or a single line break without a terminator (verse lines continue their sentence), and never
+# after a dash mid-paragraph ("ჭირიაო! — იტყოდა": the author's words). Mirrors anbani.js SENTENCE_START.
+SENTENCE_LETTER = "A-Za-zა-ჿႠ-Ⴥⴀ-ⴥᲐ-Ჿ0-9"
+SENTENCE_START = re.compile(
+    r"((?:^|\n[ \t]*\n)[\s„“\"«‘(\[—–-]*|[?.!჻][”“\"»’)\]]*\s+[„“\"«‘(\[]*|:\s*[„“\"«])"
+    "([" + SENTENCE_LETTER + "])"
+)
+
+
 # Bicameral conversion of Georgian texts.
 def convert_bicameral(text, dir_from, dir_to):
     if not text:
@@ -117,19 +130,10 @@ def convert_bicameral(text, dir_from, dir_to):
     upper_script = BICAMERAL_RULES[dir_to]["upper"]
     lower_script = BICAMERAL_RULES[dir_to]["lower"]
 
-    # First letter to the upper-case script, the remainder to the lower-case one
-    converted = list(
-        letter_converter(text[0], dir_from, upper_script)
-        + convert_unicameral(text[1:], dir_from, lower_script)
-    )
-
-    # Upper-case the first letter after every sentence terminator
-    for match in re.finditer(
-        r"[?.!჻]\s+[A-Za-zა-ჿႠ-Ⴥⴀ-ⴥᲐ-Ჿ0-9]", "".join(converted)
-    ):
-        converted[match.end() - 1] = letter_converter(
-            converted[match.end() - 1], lower_script, upper_script
-        )
+    converted = list(SENTENCE_START.sub(
+        lambda m: m.group(1) + letter_converter(m.group(2), lower_script, upper_script),
+        convert_unicameral(text, dir_from, lower_script),
+    ))
 
     # Upper-case a letter explicitly marked with a trailing apostrophe
     for match in re.finditer(r"[ა-ჿႠ-Ⴥⴀ-ⴥᲐ-Ჿ]'", "".join(converted)):
