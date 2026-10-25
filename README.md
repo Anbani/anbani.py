@@ -170,6 +170,16 @@ both test suites run. As of 3.0 they are feature-equivalent; the only
 intentional gaps are `ebook2text` (Python-only, needs PyMuPDF) and the
 browser/UMD bundle (js-only).
 
+## 3.4
+Table fixes, each backed by a source in [docs/table-sources.md](docs/table-sources.md).
+- New `national_simplified`: the apostrophe-free national system (State Language Department guidelines).
+- Letters with no counterpart in the target table are **kept**, no longer dropped (ჶ–ჿ in Asomtavruli/Nuskhuri, ჱ–ჵ in the 33-letter Latin tables).
+- Asomtavruli Ⴧ Ⴭ and Nuskhuri ⴧ ⴭ (YN, AEN) added, converted and detected.
+- `cyrillic`: ფ п, წ ц, ჭ ч (GUGK 1972). `greek`: ფ π, ხ χ, გ γκ, ი ι, ძ τζ, heta dropped from შ ყ ჭ. `armenian`: ყ ղ.
+- `phonetic`: ejectives all ʼ (U+02BC), ჱ ej, ჽ æ, ჼ a bare combining tilde. `iso_9984` (the 1996 edition): ჴ ẖ. `titus`: ძ ʒ. `bgn` (1981): no archaic letters.
+- `classify_text` reports `"braille"` and `interpret` accepts braille input.
+- `georgianise`: hyphenated words no longer keep their `<…>` markers.
+
 ## 3.0 — breaking changes
 
 - `classify_text` returns `"unknown"` for undetectable / mixed-script text and

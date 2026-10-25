@@ -16,10 +16,11 @@ with open(datafilepath, encoding="utf-8") as _f:
 script_regex = {
     "mkhedruli": "[ა-ჿ]",
     "mtavruli": "[Ა-Ჿ]",
-    "asomtavruli": "[Ⴀ-Ⴥ]",
-    "nuskhuri": "[ⴀ-ⴥ]",
+    "asomtavruli": "[Ⴀ-ჅჇჍ]",
+    "nuskhuri": "[ⴀ-ⴥⴧⴭ]",
     "latin": "[a-zA-Z]",
     "cyrillic": "[А-Яа-я]",
+    "braille": "[⠀-⣿]",
 }
 
 # Scripts usable as a conversion *source* (i.e. that index 1:1 into the table).
@@ -80,21 +81,22 @@ def interpret(text, dir_to):
 
 
 # Vector-based script classifier, mirroring anbani.js classifyText: detects the
-# four unicameral scripts, latin, cyrillic, and — when exactly two Georgian
+# four unicameral scripts, latin, cyrillic, braille, and — when exactly two Georgian
 # scripts co-occur — the bicameral script they compose. Anything else (mixed
 # Georgian+Latin, empty, digits-only, …) is "unknown".
-_CLASSIFY_ORDER = ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri", "latin", "cyrillic")
+_CLASSIFY_ORDER = ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri", "latin", "cyrillic", "braille")
 _CLASSIFY_VECTOR = {
-    (True, False, False, False, False, False): "mkhedruli",
-    (False, True, False, False, False, False): "mtavruli",
-    (False, False, True, False, False, False): "asomtavruli",
-    (False, False, False, True, False, False): "nuskhuri",
-    (True, True, False, False, False, False): "tfileliseuli",
-    (True, False, True, False, False, False): "shanidziseuli",
-    (False, False, True, True, False, False): "khutsuri",
-    (False, True, True, False, False, False): "sasataure",
-    (False, False, False, False, True, False): "latin",
-    (False, False, False, False, False, True): "cyrillic",
+    (True, False, False, False, False, False, False): "mkhedruli",
+    (False, True, False, False, False, False, False): "mtavruli",
+    (False, False, True, False, False, False, False): "asomtavruli",
+    (False, False, False, True, False, False, False): "nuskhuri",
+    (True, True, False, False, False, False, False): "tfileliseuli",
+    (True, False, True, False, False, False, False): "shanidziseuli",
+    (False, False, True, True, False, False, False): "khutsuri",
+    (False, True, True, False, False, False, False): "sasataure",
+    (False, False, False, False, True, False, False): "latin",
+    (False, False, False, False, False, True, False): "cyrillic",
+    (False, False, False, False, False, False, True): "braille",
 }
 
 
@@ -115,7 +117,7 @@ def convert_unicameral(text, dir_from, dir_to):
 #   - direct speech after a colon (: „).
 # Never after ; , … or a single line break without a terminator (verse lines continue their sentence), and never
 # after a dash mid-paragraph ("ჭირიაო! — იტყოდა": the author's words). Mirrors anbani.js SENTENCE_START.
-SENTENCE_LETTER = "A-Za-zა-ჿႠ-Ⴥⴀ-ⴥᲐ-Ჿ0-9"
+SENTENCE_LETTER = "A-Za-zა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ0-9"
 SENTENCE_START = re.compile(
     r"((?:^|\n[ \t]*\n)[\s„“\"«‘(\[—–-]*|[?.!჻][”“\"»’)\]]*\s+[„“\"«‘(\[]*|:\s*[„“\"«])"
     "([" + SENTENCE_LETTER + "])"
@@ -136,7 +138,7 @@ def convert_bicameral(text, dir_from, dir_to):
     ))
 
     # Upper-case a letter explicitly marked with a trailing apostrophe
-    for match in re.finditer(r"[ა-ჿႠ-Ⴥⴀ-ⴥᲐ-Ჿ]'", "".join(converted)):
+    for match in re.finditer(r"[ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ]'", "".join(converted)):
         converted[match.start()] = letter_converter(
             converted[match.start()], lower_script, upper_script
         )
@@ -147,7 +149,8 @@ def convert_bicameral(text, dir_from, dir_to):
 
 def letter_converter(letter, dir_from, dir_to):
     try:
-        return data["alphabets"][dir_to][data["alphabets"][dir_from].index(letter)]
+        # An empty entry means no counterpart: keep the letter, never drop it.
+        return data["alphabets"][dir_to][data["alphabets"][dir_from].index(letter)] or letter
     except ValueError:
         # Letter not present in the source alphabet (punctuation, spaces, …)
         return letter
@@ -157,6 +160,6 @@ def _fold_letter(letter, upper, lower):
     # Map an upper-script letter to its lower-script twin; leave lower-script
     # letters and non-letters unchanged. Used to normalise bicameral text.
     try:
-        return data["alphabets"][lower][data["alphabets"][upper].index(letter)]
+        return data["alphabets"][lower][data["alphabets"][upper].index(letter)] or letter
     except ValueError:
         return letter

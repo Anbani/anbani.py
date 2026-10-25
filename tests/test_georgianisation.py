@@ -26,5 +26,10 @@ def test_georgianise_mode_dispatch():
     assert isinstance(georgianise("gamarjoba", mode="accurate"), str)
 
 
+def test_hyphenated_words_lose_their_chevrons():
+    out = georgianise("ara-pheri mosula")
+    assert "<" not in out and ">" not in out, out
+
+
 def test_latinise_roundtrips_simple_word():
     assert latinise("გამარჯობა") == "gamarjoba"

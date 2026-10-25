@@ -144,7 +144,8 @@ def _chevron_wrap(sentence):
     return sentence
 
 def _chevron_unwrap(sentence):
-    sentence = re.sub(r"<(\w+)>", r"\1", sentence)
+    # Same shape as _chevron_wrap, hyphenated words included (they used to keep their chevrons).
+    sentence = re.sub(r"<(\w+(?:-\w+)?)>", r"\1", sentence)
 
     return sentence
 
