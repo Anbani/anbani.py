@@ -179,6 +179,7 @@ Table fixes, each backed by a source in [docs/table-sources.md](docs/table-sourc
 - `phonetic`: ejectives all ʼ (U+02BC), ჱ ej, ჽ æ, ჼ a bare combining tilde. `iso_9984` (the 1996 edition): ჴ ẖ. `titus`: ძ ʒ. `bgn` (1981): no archaic letters.
 - `classify_text` reports `"braille"` and `interpret` accepts braille input.
 - `georgianise`: hyphenated words no longer keep their `<…>` markers.
+- New `toolkit.numeric_value(text)`: the sum of the letters' numeral values (ჩქ → 1600); the `numeric` target still writes each letter's value.
 
 ## 3.0 — breaking changes
 

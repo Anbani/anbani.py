@@ -12,6 +12,8 @@ including filtered-out characters — this is intentional and matches anbani.js.
 
 import re
 
+from anbani.core.converter import data
+
 DEFAULT_MISS = "[ა-ჰᲐ-ᲰႠ-Ⴠⴀ-ⴠa-zA-ZА-Яа-я]"
 
 
@@ -45,3 +47,21 @@ def friedman(text, miss=DEFAULT_MISS):
     total = sum(table.values())
     numerator = sum(n * (n - 1) for n in table.values())
     return numerator / (total * (total - 1)) if total > 1 else 0
+
+
+def _numeral_map():
+    values = data["alphabets"]["numeric"]
+    table = {}
+    for script in ("mkhedruli", "mtavruli", "asomtavruli", "nuskhuri"):
+        for ch, v in zip(data["alphabets"][script], values):
+            if ch and v.isdigit() and ch not in table:
+                table[ch] = int(v)
+    return table
+
+
+_NUMERALS = _numeral_map()
+
+
+def numeric_value(text):
+    """Sum of the letters' numeral values (ჩქ -> 1600); everything else counts 0. Mirrors anbani.js numericValue."""
+    return sum(_NUMERALS.get(ch, 0) for ch in text)

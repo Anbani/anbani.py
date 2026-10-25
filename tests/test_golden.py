@@ -38,6 +38,7 @@ REGISTRY = {
     "toolkit.count": lambda a: anbani.toolkit.count(*a),
     "toolkit.frequency": lambda a: anbani.toolkit.frequency(*a),
     "toolkit.friedman": lambda a: anbani.toolkit.friedman(*a),
+    "toolkit.numeric_value": lambda a: anbani.toolkit.numeric_value(*a),
 }
 
 
